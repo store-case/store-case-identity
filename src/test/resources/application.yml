@@ -17,3 +17,8 @@ jasypt:
   encryptor:
     password: ${jasypt_key}
     bean: jasyptEncryptor
+
+jwt:
+  secret: ${jwt_key}
+  expiration_time: 600000
+  refresh_expiration_time: 1209600000
