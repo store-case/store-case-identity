@@ -1,4 +1,4 @@
-package com.leedahun.storecaseidentity.domain.auth.dto;
+package com.leedahun.storecaseidentity.domain.auth.constant;
 
 public final class JwtConstants {
     public static final String TOKEN_PREFIX = "Bearer ";

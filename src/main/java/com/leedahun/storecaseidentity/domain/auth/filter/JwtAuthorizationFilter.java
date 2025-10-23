@@ -1,7 +1,7 @@
 package com.leedahun.storecaseidentity.domain.auth.filter;
 
 import com.leedahun.storecaseidentity.common.error.exception.CustomException;
-import com.leedahun.storecaseidentity.domain.auth.dto.JwtConstants;
+import com.leedahun.storecaseidentity.domain.auth.constant.JwtConstants;
 import com.leedahun.storecaseidentity.domain.auth.dto.LoginUser;
 import com.leedahun.storecaseidentity.domain.auth.util.AuthenticationResponseUtil;
 import com.leedahun.storecaseidentity.domain.auth.util.JwtUtil;

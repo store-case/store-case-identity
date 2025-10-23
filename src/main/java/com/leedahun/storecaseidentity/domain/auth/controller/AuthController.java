@@ -3,7 +3,7 @@ package com.leedahun.storecaseidentity.domain.auth.controller;
 import com.leedahun.storecaseidentity.common.message.SuccessMessage;
 import com.leedahun.storecaseidentity.common.response.HttpResponse;
 import com.leedahun.storecaseidentity.domain.auth.dto.JoinRequestDto;
-import com.leedahun.storecaseidentity.domain.auth.dto.JwtProperties;
+import com.leedahun.storecaseidentity.domain.auth.config.JwtProperties;
 import com.leedahun.storecaseidentity.domain.auth.dto.LoginRequestDto;
 import com.leedahun.storecaseidentity.domain.auth.dto.LoginUser;
 import com.leedahun.storecaseidentity.domain.auth.dto.TokenResponseDto;

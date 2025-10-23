@@ -1,6 +1,6 @@
 package com.leedahun.storecaseidentity.domain.auth.util;
 
-import com.leedahun.storecaseidentity.domain.auth.dto.JwtConstants;
+import com.leedahun.storecaseidentity.domain.auth.constant.JwtConstants;
 import jakarta.servlet.http.HttpServletResponse;
 import java.time.Duration;
 import lombok.RequiredArgsConstructor;

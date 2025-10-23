@@ -1,4 +1,4 @@
-package com.leedahun.storecaseidentity.domain.auth.dto;
+package com.leedahun.storecaseidentity.domain.auth.config;
 
 import lombok.Getter;
 import lombok.Setter;
