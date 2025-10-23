@@ -1,5 +1,6 @@
 package com.leedahun.storecaseidentity.domain.auth.controller;
 
+import com.leedahun.storecaseidentity.common.error.exception.EntityNotFoundException;
 import com.leedahun.storecaseidentity.common.message.SuccessMessage;
 import com.leedahun.storecaseidentity.common.response.HttpResponse;
 import com.leedahun.storecaseidentity.domain.auth.dto.JoinRequestDto;
@@ -14,7 +15,6 @@ import com.leedahun.storecaseidentity.domain.auth.service.LoginService;
 import com.leedahun.storecaseidentity.domain.auth.util.CookieUtil;
 import com.leedahun.storecaseidentity.domain.auth.util.PrincipalUtil;
 import jakarta.servlet.http.HttpServletResponse;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -41,7 +41,7 @@ public class AuthController {
     @PostMapping("/join")
     public ResponseEntity<?> join(@RequestBody JoinRequestDto joinRequestDto) {
         loginService.join(joinRequestDto);
-        return ResponseEntity.ok().body(new HttpResponse(HttpStatus.OK, SuccessMessage.WRITE_SUCCESS.getMessage(), null));
+        return ResponseEntity.ok().body(new HttpResponse(HttpStatus.CREATED, SuccessMessage.WRITE_SUCCESS.getMessage(), null));
     }
 
     @PostMapping("/login")
@@ -73,8 +73,9 @@ public class AuthController {
     @GetMapping("/test")
     public ResponseEntity<?> test(@AuthenticationPrincipal LoginUser loginUser) {
         Long userId = PrincipalUtil.getUserId(loginUser);
-        Optional<User> user = userRepository.findById(userId);
-        return ResponseEntity.ok().body(user.get());
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("User", loginUser.getId()));
+        return ResponseEntity.ok().body(user);
     }
 
 }
