@@ -47,10 +47,6 @@ public class SecurityConfig {
             .formLogin(AbstractHttpConfigurer::disable)
             .httpBasic(AbstractHttpConfigurer::disable);
 
-        http.logout(logout -> logout
-                .logoutUrl("/api/logout")
-        );
-
         http.authorizeHttpRequests(authorize -> authorize
                 .requestMatchers("/api/auth/join", "/api/auth/login").permitAll()
                 .requestMatchers("/api/auth/test").permitAll()
