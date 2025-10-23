@@ -1,6 +1,7 @@
 package com.leedahun.storecaseidentity.domain.auth.service.impl;
 
 import com.leedahun.storecaseidentity.common.error.exception.EntityNotFoundException;
+import com.leedahun.storecaseidentity.domain.auth.constant.JwtConstants;
 import com.leedahun.storecaseidentity.domain.auth.dto.JoinRequestDto;
 import com.leedahun.storecaseidentity.domain.auth.dto.LoginRequestDto;
 import com.leedahun.storecaseidentity.domain.auth.dto.LoginUser;
@@ -54,8 +55,8 @@ public class LoginServiceImpl implements LoginService {
         Long id = user.getId();
         Role role = user.getRole();
         return TokenResponseDto.builder()
-                .accessToken(jwtUtil.createAccessToken(id, role))
-                .refreshToken(jwtUtil.createRefreshToken(id, role))
+                .accessToken(JwtConstants.TOKEN_PREFIX + jwtUtil.createAccessToken(id, role))
+                .refreshToken(JwtConstants.TOKEN_PREFIX + jwtUtil.createRefreshToken(id, role))
                 .build();
     }
 
@@ -68,8 +69,8 @@ public class LoginServiceImpl implements LoginService {
                 .orElseThrow(() -> new EntityNotFoundException("User", String.valueOf(loginUser.getId())));
 
         return TokenResponseDto.builder()
-                .accessToken(jwtUtil.createAccessToken(user.getId(), user.getRole()))
-                .refreshToken(jwtUtil.createRefreshToken(user.getId(), user.getRole()))
+                .accessToken(JwtConstants.TOKEN_PREFIX + jwtUtil.createAccessToken(user.getId(), user.getRole()))
+                .refreshToken(JwtConstants.TOKEN_PREFIX + jwtUtil.createRefreshToken(user.getId(), user.getRole()))
                 .build();
     }
 

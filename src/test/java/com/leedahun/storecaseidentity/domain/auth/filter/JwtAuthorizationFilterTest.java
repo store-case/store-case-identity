@@ -54,7 +54,7 @@ class JwtAuthorizationFilterTest {
     }
 
     private String makeValidAuthHeader(Long userId, Role role) {
-        return jwtUtil.createAccessToken(userId, role);
+        return JwtConstants.TOKEN_PREFIX + jwtUtil.createAccessToken(userId, role);
     }
 
     private String makeForgedAuthHeader(Long userId, Role role) {

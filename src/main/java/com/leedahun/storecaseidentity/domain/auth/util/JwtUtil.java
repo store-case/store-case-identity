@@ -32,13 +32,12 @@ public class JwtUtil {
     }
 
     private String createToken(Long id, Role role, long expirationTime) {
-        String jwtToken = JWT.create()
+        return JWT.create()
                 .withSubject(JwtConstants.CLAIM_SUBJECT)
                 .withExpiresAt(new Date(System.currentTimeMillis() + expirationTime))
                 .withClaim(JwtConstants.CLAIM_ID, id)
                 .withClaim(JwtConstants.CLAIM_ROLE, role.name())
                 .sign(Algorithm.HMAC512(jwtProperties.getSecret()));
-        return JwtConstants.TOKEN_PREFIX + jwtToken;
     }
 
     public LoginUser verify(String token) {

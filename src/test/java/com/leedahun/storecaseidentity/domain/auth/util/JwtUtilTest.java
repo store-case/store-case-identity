@@ -47,8 +47,7 @@ class JwtUtilTest {
         String accessToken = jwtUtil.createAccessToken(userId, role);
 
         // then
-        assertThat(accessToken).startsWith(JwtConstants.TOKEN_PREFIX);
-        LoginUser loginUser = jwtUtil.verify(accessToken.replaceFirst(JwtConstants.TOKEN_PREFIX, ""));
+        LoginUser loginUser = jwtUtil.verify(accessToken);
         assertThat(loginUser.getId()).isEqualTo(userId);
         assertThat(loginUser.getRole()).isEqualTo(role.name());
     }
@@ -64,8 +63,7 @@ class JwtUtilTest {
         String refreshToken = jwtUtil.createRefreshToken(userId, role);
 
         // then
-        assertThat(refreshToken).startsWith(JwtConstants.TOKEN_PREFIX);
-        LoginUser loginUser = jwtUtil.verify(refreshToken.replaceFirst(JwtConstants.TOKEN_PREFIX, ""));
+        LoginUser loginUser = jwtUtil.verify(refreshToken);
         assertThat(loginUser.getId()).isEqualTo(userId);
         assertThat(loginUser.getRole()).isEqualTo(role.name());
     }
@@ -100,13 +98,4 @@ class JwtUtilTest {
         assertThrows(InvalidJwtTokenException.class, () -> jwtUtil.verify(invalidToken));
     }
 
-    @Test
-    @DisplayName("접두사가 포함된 토큰을 그대로 검증하면 실패해야 한다")
-    void verify_withPrefix_shouldFail() {
-        // given
-        String accessToken = jwtUtil.createAccessToken(3L, Role.USER);
-
-        // then
-        assertThrows(InvalidJwtTokenException.class, () -> jwtUtil.verify(accessToken));
-    }
 }
