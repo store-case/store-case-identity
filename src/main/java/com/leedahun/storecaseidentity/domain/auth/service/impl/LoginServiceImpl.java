@@ -2,10 +2,7 @@ package com.leedahun.storecaseidentity.domain.auth.service.impl;
 
 import com.leedahun.storecaseidentity.common.error.exception.EntityNotFoundException;
 import com.leedahun.storecaseidentity.domain.auth.constant.JwtConstants;
-import com.leedahun.storecaseidentity.domain.auth.dto.JoinRequestDto;
-import com.leedahun.storecaseidentity.domain.auth.dto.LoginRequestDto;
-import com.leedahun.storecaseidentity.domain.auth.dto.LoginUser;
-import com.leedahun.storecaseidentity.domain.auth.dto.TokenResponseDto;
+import com.leedahun.storecaseidentity.domain.auth.dto.*;
 import com.leedahun.storecaseidentity.domain.auth.entity.Role;
 import com.leedahun.storecaseidentity.domain.auth.entity.User;
 import com.leedahun.storecaseidentity.domain.auth.exception.InvalidPasswordException;
@@ -44,7 +41,7 @@ public class LoginServiceImpl implements LoginService {
 
     @Override
     @Transactional(readOnly = true)
-    public TokenResponseDto login(LoginRequestDto loginRequestDto) {
+    public LoginResponseDto login(LoginRequestDto loginRequestDto) {
         User user = userRepository.findByEmail(loginRequestDto.getEmail())
                 .orElseThrow(() -> new EntityNotFoundException("User", loginRequestDto.getEmail()));
 
@@ -52,11 +49,11 @@ public class LoginServiceImpl implements LoginService {
             throw new InvalidPasswordException();
         }
 
-        Long id = user.getId();
-        Role role = user.getRole();
-        return TokenResponseDto.builder()
-                .accessToken(JwtConstants.TOKEN_PREFIX + jwtUtil.createAccessToken(id, role))
-                .refreshToken(JwtConstants.TOKEN_PREFIX + jwtUtil.createRefreshToken(id, role))
+        return LoginResponseDto.builder()
+                .id(user.getId())
+                .email(user.getEmail())
+                .name(user.getName())
+                .role(user.getRole())
                 .build();
     }
 
@@ -68,9 +65,14 @@ public class LoginServiceImpl implements LoginService {
         User user = userRepository.findById(loginUser.getId())
                 .orElseThrow(() -> new EntityNotFoundException("User", String.valueOf(loginUser.getId())));
 
+        return issueTokens(user.getId(), user.getRole());
+    }
+
+    @Override
+    public TokenResponseDto issueTokens(Long userId, Role role) {
         return TokenResponseDto.builder()
-                .accessToken(JwtConstants.TOKEN_PREFIX + jwtUtil.createAccessToken(user.getId(), user.getRole()))
-                .refreshToken(JwtConstants.TOKEN_PREFIX + jwtUtil.createRefreshToken(user.getId(), user.getRole()))
+                .accessToken(JwtConstants.TOKEN_PREFIX + jwtUtil.createAccessToken(userId, role))
+                .refreshToken(JwtConstants.TOKEN_PREFIX + jwtUtil.createRefreshToken(userId, role))
                 .build();
     }
 

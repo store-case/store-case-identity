@@ -5,6 +5,7 @@ import com.leedahun.storecaseidentity.common.response.HttpResponse;
 import com.leedahun.storecaseidentity.domain.auth.config.JwtProperties;
 import com.leedahun.storecaseidentity.domain.auth.dto.JoinRequestDto;
 import com.leedahun.storecaseidentity.domain.auth.dto.LoginRequestDto;
+import com.leedahun.storecaseidentity.domain.auth.dto.LoginResponseDto;
 import com.leedahun.storecaseidentity.domain.auth.dto.TokenResponseDto;
 import com.leedahun.storecaseidentity.domain.auth.exception.RefreshTokenNotExistsException;
 import com.leedahun.storecaseidentity.domain.auth.service.LoginService;
@@ -33,11 +34,13 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequestDto loginRequestDto) {
-        TokenResponseDto tokens = loginService.login(loginRequestDto);
+        LoginResponseDto loginResponseDto = loginService.login(loginRequestDto);
+        TokenResponseDto tokens = loginService.issueTokens(loginResponseDto.getId(), loginResponseDto.getRole());
+        loginResponseDto.setAccessToken(tokens.getAccessToken());
         ResponseCookie refreshCookie = CookieUtil.createResponseCookie(tokens.getRefreshToken(), jwtProperties.getRefreshExpirationTime());
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, refreshCookie.toString())
-                .body(new HttpResponse(HttpStatus.OK, SuccessMessage.LOGIN_SUCCESS.getMessage(), tokens.getAccessToken()));
+                .body(new HttpResponse(HttpStatus.OK, SuccessMessage.LOGIN_SUCCESS.getMessage(), loginResponseDto));
     }
 
     @PostMapping("/refresh")
