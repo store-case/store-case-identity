@@ -20,7 +20,7 @@ class CustomAccessDeniedHandlerTest {
     private final ObjectMapper om = new ObjectMapper();
 
     @Test
-    @DisplayName("AccessDeniedHandler는 401 상태와 JSON 에러 응답을 반환한다")
+    @DisplayName("AccessDeniedHandler는 403 상태와 JSON 에러 응답을 반환한다")
     void testHandle() throws IOException, ServletException {
         // given
         MockHttpServletRequest request = new MockHttpServletRequest("GET", "/test");
@@ -31,15 +31,15 @@ class CustomAccessDeniedHandlerTest {
         customAccessDeniedHandler.handle(request, response, accessDeniedException);
 
         // then
-        assertThat(response.getStatus()).isEqualTo(401);
+        assertThat(response.getStatus()).isEqualTo(403);
         assertThat(response.getContentType()).isEqualTo("application/json;charset=UTF-8");
 
         String responseBody = response.getContentAsString();
         assertThat(responseBody).isNotBlank();
 
         HttpResponse httpResponse = om.readValue(responseBody, HttpResponse.class);
-        assertThat(httpResponse.getStatus()).isEqualTo(401);
-        assertThat(httpResponse.getMessage()).isEqualTo(ErrorMessage.UNAUTHORIZED.getMessage());
+        assertThat(httpResponse.getStatus()).isEqualTo(403);
+        assertThat(httpResponse.getMessage()).isEqualTo(ErrorMessage.FORBIDDEN.getMessage());
         assertThat(httpResponse.getData()).isNull();
 
     }

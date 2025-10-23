@@ -16,7 +16,7 @@ public class CustomAccessDeniedHandler implements AccessDeniedHandler {
 
     @Override
     public void handle(HttpServletRequest request, HttpServletResponse response, AccessDeniedException accessDeniedException) throws IOException, ServletException {
-        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-        AuthenticationResponseUtil.authenticateFail(response, HttpStatus.UNAUTHORIZED, ErrorMessage.UNAUTHORIZED.getMessage());
+        response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+        AuthenticationResponseUtil.authenticateFail(response, HttpStatus.FORBIDDEN, ErrorMessage.FORBIDDEN.getMessage());
     }
 }
