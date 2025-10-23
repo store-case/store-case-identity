@@ -8,6 +8,7 @@ import com.leedahun.storecaseidentity.domain.auth.dto.TokenResponseDto;
 import com.leedahun.storecaseidentity.domain.auth.entity.Role;
 import com.leedahun.storecaseidentity.domain.auth.entity.User;
 import com.leedahun.storecaseidentity.domain.auth.exception.InvalidPasswordException;
+import com.leedahun.storecaseidentity.domain.auth.exception.UserAlreadyExistsException;
 import com.leedahun.storecaseidentity.domain.auth.repository.UserRepository;
 import com.leedahun.storecaseidentity.domain.auth.service.LoginService;
 import com.leedahun.storecaseidentity.domain.auth.util.JwtUtil;
@@ -27,6 +28,9 @@ public class LoginServiceImpl implements LoginService {
 
     @Override
     public void join(JoinRequestDto joinRequestDto) {
+        userRepository.findByEmail(joinRequestDto.getEmail())
+                .ifPresent(u -> {throw new UserAlreadyExistsException();});
+
         User user = User.builder()
                 .email(joinRequestDto.getEmail())
                 .password(passwordEncoder.encode(joinRequestDto.getPassword()))
@@ -48,7 +52,7 @@ public class LoginServiceImpl implements LoginService {
         }
 
         Long id = user.getId();
-        Role role = Role.USER;
+        Role role = user.getRole();
         return TokenResponseDto.builder()
                 .accessToken(jwtUtil.createAccessToken(id, role))
                 .refreshToken(jwtUtil.createRefreshToken(id, role))
