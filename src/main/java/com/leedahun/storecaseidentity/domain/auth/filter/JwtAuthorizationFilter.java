@@ -29,7 +29,7 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
     private final JwtUtil jwtUtil;
 
     // 아래 url들은 jwt 토큰 검사를 패스함
-    private static final List<String> WHITELIST = List.of(
+    protected static List<String> WHITELIST = List.of(
             "/api/auth/login",
             "/api/auth/join"
     );
