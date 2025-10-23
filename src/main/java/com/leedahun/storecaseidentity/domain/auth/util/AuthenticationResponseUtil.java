@@ -11,11 +11,13 @@ import org.springframework.stereotype.Component;
 @Component
 public class AuthenticationResponseUtil {
 
+    private static final ObjectMapper objectMapper = new ObjectMapper();
+
     public static void authenticateFail(HttpServletResponse response,
                                         HttpStatus httpStatus,
                                         String message) throws IOException, ServletException {
         HttpResponse httpResponse = new HttpResponse(httpStatus, message, null);
-        String responseData = new ObjectMapper().writeValueAsString(httpResponse);
+        String responseData = objectMapper.writeValueAsString(httpResponse);
         response.setContentType("application/json;charset=UTF-8");
         response.getWriter().write(responseData);
     }
