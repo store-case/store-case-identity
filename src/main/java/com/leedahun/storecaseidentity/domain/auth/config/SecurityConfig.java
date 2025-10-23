@@ -52,7 +52,8 @@ public class SecurityConfig {
         );
 
         http.authorizeHttpRequests(authorize -> authorize
-                .anyRequest().permitAll()
+                .requestMatchers("/api/auth/join", "/api/auth/login").permitAll()
+                .requestMatchers("/api/auth/test").permitAll()
         );
 
         http.exceptionHandling(e -> e
