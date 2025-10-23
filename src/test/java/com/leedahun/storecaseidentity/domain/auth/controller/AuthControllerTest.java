@@ -6,7 +6,9 @@ import com.leedahun.storecaseidentity.domain.auth.config.SecurityConfig;
 import com.leedahun.storecaseidentity.domain.auth.constant.JwtConstants;
 import com.leedahun.storecaseidentity.domain.auth.dto.JoinRequestDto;
 import com.leedahun.storecaseidentity.domain.auth.dto.LoginRequestDto;
+import com.leedahun.storecaseidentity.domain.auth.dto.LoginResponseDto;
 import com.leedahun.storecaseidentity.domain.auth.dto.TokenResponseDto;
+import com.leedahun.storecaseidentity.domain.auth.entity.Role;
 import com.leedahun.storecaseidentity.domain.auth.exception.RefreshTokenNotExistsException;
 import com.leedahun.storecaseidentity.domain.auth.filter.JwtAuthorizationFilter;
 import com.leedahun.storecaseidentity.domain.auth.service.LoginService;
@@ -80,12 +82,19 @@ class AuthControllerTest {
     void login_success() throws Exception {
         // given
         LoginRequestDto loginRequest = new LoginRequestDto("a@a.com", "pw");
+        LoginResponseDto loginResult = LoginResponseDto.builder()
+                .id(1L)
+                .email("test@email.com")
+                .name("user")
+                .role(Role.USER)
+                .build();
         TokenResponseDto tokens = TokenResponseDto.builder()
                 .accessToken(JwtConstants.TOKEN_PREFIX + "access.raw")
                 .refreshToken(JwtConstants.TOKEN_PREFIX + "refresh.raw")
                 .build();
 
-        given(loginService.login(any(LoginRequestDto.class))).willReturn(tokens);
+        given(loginService.login(any(LoginRequestDto.class))).willReturn(loginResult);
+        given(loginService.issueTokens(anyLong(), any(Role.class))).willReturn(tokens);
         given(jwtProperties.getRefreshExpirationTime()).willReturn(REFRESH_EXPIRATION_TIME);
 
         // when & then
@@ -95,7 +104,11 @@ class AuthControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(header().exists(HttpHeaders.SET_COOKIE))
                 .andExpect(jsonPath("$.status").value("200"))
-                .andExpect(jsonPath("$.data").value(tokens.getAccessToken()))
+                .andExpect(jsonPath("$.data.id").value(1))
+                .andExpect(jsonPath("$.data.email").value("test@email.com"))
+                .andExpect(jsonPath("$.data.name").value("user"))
+                .andExpect(jsonPath("$.data.role").value("USER"))
+                .andExpect(jsonPath("$.data.accessToken").value(tokens.getAccessToken()))
                 .andReturn();
 
         String setCookie = result.getResponse().getHeader(HttpHeaders.SET_COOKIE);
