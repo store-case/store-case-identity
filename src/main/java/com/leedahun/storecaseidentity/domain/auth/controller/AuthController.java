@@ -41,7 +41,7 @@ public class AuthController {
     @PostMapping("/join")
     public ResponseEntity<?> join(@RequestBody JoinRequestDto joinRequestDto) {
         loginService.join(joinRequestDto);
-        return ResponseEntity.ok().body(new HttpResponse(HttpStatus.CREATED, SuccessMessage.WRITE_SUCCESS.getMessage(), null));
+        return ResponseEntity.status(HttpStatus.CREATED).body(new HttpResponse(HttpStatus.CREATED, SuccessMessage.WRITE_SUCCESS.getMessage(), null));
     }
 
     @PostMapping("/login")
