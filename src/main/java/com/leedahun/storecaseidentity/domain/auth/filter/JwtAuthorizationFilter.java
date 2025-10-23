@@ -59,17 +59,15 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
         }
 
         try {
-            if (StringUtils.hasText(token)) {
-                LoginUser principal = jwtUtil.verify(token);
+            LoginUser principal = jwtUtil.verify(token);
 
-                if (SecurityContextHolder.getContext().getAuthentication() == null) {
-                    UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                            principal, null, principal.getAuthorities());
+            if (SecurityContextHolder.getContext().getAuthentication() == null) {
+                UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                        principal, null, principal.getAuthorities());
 
-                    SecurityContext context = SecurityContextHolder.createEmptyContext();
-                    context.setAuthentication(authentication);
-                    SecurityContextHolder.setContext(context);
-                }
+                SecurityContext context = SecurityContextHolder.createEmptyContext();
+                context.setAuthentication(authentication);
+                SecurityContextHolder.setContext(context);
             }
         } catch (CustomException e) {
             res.setStatus(e.getStatus().value());
