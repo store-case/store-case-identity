@@ -1,7 +1,6 @@
 package com.leedahun.storecaseidentity.domain.auth.service.impl;
 
 import com.leedahun.storecaseidentity.common.error.exception.EntityNotFoundException;
-import com.leedahun.storecaseidentity.domain.auth.constant.JwtConstants;
 import com.leedahun.storecaseidentity.domain.auth.dto.*;
 import com.leedahun.storecaseidentity.domain.auth.entity.Role;
 import com.leedahun.storecaseidentity.domain.auth.entity.User;
@@ -71,8 +70,8 @@ public class LoginServiceImpl implements LoginService {
     @Override
     public TokenResponseDto issueTokens(Long userId, Role role) {
         return TokenResponseDto.builder()
-                .accessToken(JwtConstants.TOKEN_PREFIX + jwtUtil.createAccessToken(userId, role))
-                .refreshToken(JwtConstants.TOKEN_PREFIX + jwtUtil.createRefreshToken(userId, role))
+                .accessToken(jwtUtil.createAccessToken(userId, role))
+                .refreshToken(jwtUtil.createRefreshToken(userId, role))
                 .build();
     }
 

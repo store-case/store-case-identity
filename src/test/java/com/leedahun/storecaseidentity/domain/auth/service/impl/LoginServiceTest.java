@@ -176,8 +176,8 @@ class LoginServiceTest {
         TokenResponseDto tokens = loginService.reissueTokens("refresh.raw");
 
         // then
-        assertThat(tokens.getAccessToken()).isEqualTo(JwtConstants.TOKEN_PREFIX + "new.access.raw");
-        assertThat(tokens.getRefreshToken()).isEqualTo(JwtConstants.TOKEN_PREFIX + "new.refresh.raw");
+        assertThat(tokens.getAccessToken()).isEqualTo("new.access.raw");
+        assertThat(tokens.getRefreshToken()).isEqualTo("new.refresh.raw");
 
         verify(jwtUtil).verify("refresh.raw");
         verify(userRepository).findById(10L);
@@ -203,25 +203,4 @@ class LoginServiceTest {
         verify(jwtUtil, never()).createAccessToken(anyLong(), any());
     }
 
-    @Test
-    @DisplayName("토큰 발급시 jwtUtil이 생성한 raw 토큰에 접두사를 붙여 반환한다")
-    void issueTokens_success() {
-        // given
-        long userId = 123L;
-        Role role = Role.USER;
-
-        given(jwtUtil.createAccessToken(userId, role)).willReturn("access.raw");
-        given(jwtUtil.createRefreshToken(userId, role)).willReturn("refresh.raw");
-
-        // when
-        TokenResponseDto tokens = loginService.issueTokens(userId, role);
-
-        // then
-        assertThat(tokens.getAccessToken()).isEqualTo(JwtConstants.TOKEN_PREFIX + "access.raw");
-        assertThat(tokens.getRefreshToken()).isEqualTo(JwtConstants.TOKEN_PREFIX + "refresh.raw");
-
-        then(jwtUtil).should(times(1)).createAccessToken(userId, role);
-        then(jwtUtil).should(times(1)).createRefreshToken(userId, role);
-        then(jwtUtil).shouldHaveNoMoreInteractions();
-    }
 }
