@@ -7,6 +7,7 @@ import com.leedahun.storecaseidentity.domain.auth.dto.*;
 import com.leedahun.storecaseidentity.domain.auth.entity.Role;
 import com.leedahun.storecaseidentity.domain.auth.exception.RefreshTokenNotExistsException;
 import com.leedahun.storecaseidentity.domain.auth.filter.JwtAuthorizationFilter;
+import com.leedahun.storecaseidentity.domain.auth.service.JoinService;
 import com.leedahun.storecaseidentity.domain.auth.service.LoginService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -43,6 +44,9 @@ class AuthControllerTest {
 
     @MockitoBean
     LoginService loginService;
+
+    @MockitoBean
+    JoinService joinService;
 
     @MockitoBean
     JwtProperties jwtProperties;
