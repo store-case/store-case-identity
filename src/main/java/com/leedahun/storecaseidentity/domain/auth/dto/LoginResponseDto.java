@@ -4,7 +4,6 @@ import com.leedahun.storecaseidentity.domain.auth.entity.Role;
 import com.leedahun.storecaseidentity.domain.auth.entity.User;
 import lombok.*;
 
-@Setter
 @Getter
 @Builder
 @ToString
