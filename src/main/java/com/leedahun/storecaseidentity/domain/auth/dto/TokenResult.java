@@ -13,7 +13,7 @@ import lombok.ToString;
 @ToString
 @NoArgsConstructor
 @AllArgsConstructor
-public class TokenResponseDto {
+public class TokenResult {
     private String accessToken;
     private String refreshToken;
 }

@@ -28,19 +28,14 @@ public class LoginServiceImpl implements LoginService {
         userRepository.findByEmail(joinRequestDto.getEmail())
                 .ifPresent(u -> {throw new UserAlreadyExistsException();});
 
-        User user = User.builder()
-                .email(joinRequestDto.getEmail())
-                .password(passwordEncoder.encode(joinRequestDto.getPassword()))
-                .name(joinRequestDto.getName())
-                .phone(joinRequestDto.getPhone())
-                .build();
-
+        joinRequestDto.setEncodedPassword(passwordEncoder.encode(joinRequestDto.getPassword()));
+        User user = joinRequestDto.toEntity();
         userRepository.save(user);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public LoginResponseDto login(LoginRequestDto loginRequestDto) {
+    public LoginResult login(LoginRequestDto loginRequestDto) {
         User user = userRepository.findByEmail(loginRequestDto.getEmail())
                 .orElseThrow(() -> new EntityNotFoundException("User", loginRequestDto.getEmail()));
 
@@ -48,17 +43,14 @@ public class LoginServiceImpl implements LoginService {
             throw new InvalidPasswordException();
         }
 
-        return LoginResponseDto.builder()
-                .id(user.getId())
-                .email(user.getEmail())
-                .name(user.getName())
-                .role(user.getRole())
-                .build();
+        TokenResult tokens = issueTokens(user.getId(), user.getRole());
+        LoginResponseDto loginResponse = LoginResponseDto.from(user, tokens.getAccessToken());
+        return LoginResult.from(loginResponse, tokens.getRefreshToken());
     }
 
     @Override
     @Transactional(readOnly = true)
-    public TokenResponseDto reissueTokens(String refreshToken) {
+    public TokenResult reissueTokens(String refreshToken) {
         LoginUser loginUser = jwtUtil.verify(refreshToken);
 
         User user = userRepository.findById(loginUser.getId())
@@ -67,9 +59,8 @@ public class LoginServiceImpl implements LoginService {
         return issueTokens(user.getId(), user.getRole());
     }
 
-    @Override
-    public TokenResponseDto issueTokens(Long userId, Role role) {
-        return TokenResponseDto.builder()
+    private TokenResult issueTokens(Long userId, Role role) {
+        return TokenResult.builder()
                 .accessToken(jwtUtil.createAccessToken(userId, role))
                 .refreshToken(jwtUtil.createRefreshToken(userId, role))
                 .build();

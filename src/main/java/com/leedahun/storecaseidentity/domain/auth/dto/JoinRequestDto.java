@@ -1,5 +1,6 @@
 package com.leedahun.storecaseidentity.domain.auth.dto;
 
+import com.leedahun.storecaseidentity.domain.auth.entity.User;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -18,4 +19,17 @@ public class JoinRequestDto {
     private String password;
     private String name;
     private String phone;
+
+    public User toEntity() {
+        return User.builder()
+                .email(this.email)
+                .password(this.password)
+                .name(this.name)
+                .phone(this.phone)
+                .build();
+    }
+
+    public void setEncodedPassword(String encodedPassword) {
+        this.password = encodedPassword;
+    }
 }

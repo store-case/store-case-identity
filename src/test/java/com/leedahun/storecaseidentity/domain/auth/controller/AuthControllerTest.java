@@ -3,11 +3,7 @@ package com.leedahun.storecaseidentity.domain.auth.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.leedahun.storecaseidentity.domain.auth.config.JwtProperties;
 import com.leedahun.storecaseidentity.domain.auth.config.SecurityConfig;
-import com.leedahun.storecaseidentity.domain.auth.constant.JwtConstants;
-import com.leedahun.storecaseidentity.domain.auth.dto.JoinRequestDto;
-import com.leedahun.storecaseidentity.domain.auth.dto.LoginRequestDto;
-import com.leedahun.storecaseidentity.domain.auth.dto.LoginResponseDto;
-import com.leedahun.storecaseidentity.domain.auth.dto.TokenResponseDto;
+import com.leedahun.storecaseidentity.domain.auth.dto.*;
 import com.leedahun.storecaseidentity.domain.auth.entity.Role;
 import com.leedahun.storecaseidentity.domain.auth.exception.RefreshTokenNotExistsException;
 import com.leedahun.storecaseidentity.domain.auth.filter.JwtAuthorizationFilter;
@@ -82,19 +78,19 @@ class AuthControllerTest {
     void login_success() throws Exception {
         // given
         LoginRequestDto loginRequest = new LoginRequestDto("a@a.com", "pw");
-        LoginResponseDto loginResult = LoginResponseDto.builder()
+        LoginResponseDto loginResponseDto = LoginResponseDto.builder()
                 .id(1L)
                 .email("test@email.com")
                 .name("user")
                 .role(Role.USER)
-                .build();
-        TokenResponseDto tokens = TokenResponseDto.builder()
                 .accessToken("access.raw")
+                .build();
+        LoginResult loginResult = LoginResult.builder()
+                .loginResponseDto(loginResponseDto)
                 .refreshToken("refresh.raw")
                 .build();
 
         given(loginService.login(any(LoginRequestDto.class))).willReturn(loginResult);
-        given(loginService.issueTokens(anyLong(), any(Role.class))).willReturn(tokens);
         given(jwtProperties.getRefreshExpirationTime()).willReturn(REFRESH_EXPIRATION_TIME);
 
         // when & then
@@ -108,7 +104,7 @@ class AuthControllerTest {
                 .andExpect(jsonPath("$.data.email").value("test@email.com"))
                 .andExpect(jsonPath("$.data.name").value("user"))
                 .andExpect(jsonPath("$.data.role").value("USER"))
-                .andExpect(jsonPath("$.data.accessToken").value(tokens.getAccessToken()))
+                .andExpect(jsonPath("$.data.accessToken").value(loginResponseDto.getAccessToken()))
                 .andReturn();
 
         String setCookie = result.getResponse().getHeader(HttpHeaders.SET_COOKIE);
@@ -126,9 +122,9 @@ class AuthControllerTest {
     void refresh_success() throws Exception {
         // given
         String cookieValue = "refresh.raw";
-        TokenResponseDto tokens = TokenResponseDto.builder()
-                .accessToken(JwtConstants.TOKEN_PREFIX + "new.access.raw")
-                .refreshToken(JwtConstants.TOKEN_PREFIX + "new.refresh.raw")
+        TokenResult tokens = TokenResult.builder()
+                .accessToken("new.access.raw")
+                .refreshToken("new.refresh.raw")
                 .build();
 
         given(loginService.reissueTokens(cookieValue)).willReturn(tokens);

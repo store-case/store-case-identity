@@ -3,10 +3,7 @@ package com.leedahun.storecaseidentity.domain.auth.controller;
 import com.leedahun.storecaseidentity.common.message.SuccessMessage;
 import com.leedahun.storecaseidentity.common.response.HttpResponse;
 import com.leedahun.storecaseidentity.domain.auth.config.JwtProperties;
-import com.leedahun.storecaseidentity.domain.auth.dto.JoinRequestDto;
-import com.leedahun.storecaseidentity.domain.auth.dto.LoginRequestDto;
-import com.leedahun.storecaseidentity.domain.auth.dto.LoginResponseDto;
-import com.leedahun.storecaseidentity.domain.auth.dto.TokenResponseDto;
+import com.leedahun.storecaseidentity.domain.auth.dto.*;
 import com.leedahun.storecaseidentity.domain.auth.exception.RefreshTokenNotExistsException;
 import com.leedahun.storecaseidentity.domain.auth.service.LoginService;
 import com.leedahun.storecaseidentity.domain.auth.util.CookieUtil;
@@ -34,13 +31,11 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequestDto loginRequestDto) {
-        LoginResponseDto loginResponseDto = loginService.login(loginRequestDto);
-        TokenResponseDto tokens = loginService.issueTokens(loginResponseDto.getId(), loginResponseDto.getRole());
-        loginResponseDto.setAccessToken(tokens.getAccessToken());
-        ResponseCookie refreshCookie = CookieUtil.createResponseCookie(tokens.getRefreshToken(), jwtProperties.getRefreshExpirationTime());
+        LoginResult loginResult = loginService.login(loginRequestDto);
+        ResponseCookie refreshCookie = CookieUtil.createResponseCookie(loginResult.getRefreshToken(), jwtProperties.getRefreshExpirationTime());
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, refreshCookie.toString())
-                .body(new HttpResponse(HttpStatus.OK, SuccessMessage.LOGIN_SUCCESS.getMessage(), loginResponseDto));
+                .body(new HttpResponse(HttpStatus.OK, SuccessMessage.LOGIN_SUCCESS.getMessage(), loginResult.getLoginResponseDto()));
     }
 
     @PostMapping("/refresh")
@@ -51,7 +46,7 @@ public class AuthController {
             throw new RefreshTokenNotExistsException();
         }
 
-        TokenResponseDto tokens = loginService.reissueTokens(refreshCookie);
+        TokenResult tokens = loginService.reissueTokens(refreshCookie);
         ResponseCookie newRefreshCookie = CookieUtil.createResponseCookie(tokens.getRefreshToken(), jwtProperties.getRefreshExpirationTime());
 
         return ResponseEntity.ok()
