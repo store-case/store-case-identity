@@ -31,7 +31,9 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
     // 아래 url들은 jwt 토큰 검사를 패스함
     protected static List<String> WHITELIST = List.of(
             "/api/auth/login",
-            "/api/auth/join"
+            "/api/auth/join",
+            "/api/auth/join/email",
+            "/api/auth/join/email/verify"
     );
     private static final AntPathMatcher PATH = new AntPathMatcher();
 

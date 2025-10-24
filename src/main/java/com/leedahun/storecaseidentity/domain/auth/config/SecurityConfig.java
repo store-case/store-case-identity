@@ -48,7 +48,7 @@ public class SecurityConfig {
             .httpBasic(AbstractHttpConfigurer::disable);
 
         http.authorizeHttpRequests(authorize -> authorize
-                .requestMatchers("/api/auth/join", "/api/auth/login").permitAll()
+                .requestMatchers("/api/auth/join", "/api/auth/login", "/api/auth/join/email", "/api/auth/join/email/verify").permitAll()
                 .requestMatchers("/api/auth/test").permitAll()
         );
 
