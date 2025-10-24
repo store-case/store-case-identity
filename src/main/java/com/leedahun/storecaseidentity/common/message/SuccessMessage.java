@@ -12,7 +12,10 @@ public enum SuccessMessage {
     DELETE_SUCCESS("삭제에 성공하였습니다."),
 
     LOGIN_SUCCESS("로그인에 성공하였습니다."),
-    CREATE_TOKENS("토큰발급에 성공했습니다.");
+    CREATE_TOKENS("토큰발급에 성공했습니다."),
+
+    EMAIL_SEND_SUCCESS("이메일 전송에 성공하였습니다."),
+    EMAIL_VERIFIED("이메일 인증이 완료되었습니다.");
 
     private final String message;
 }
