@@ -89,8 +89,8 @@ class AuthControllerTest {
                 .role(Role.USER)
                 .build();
         TokenResponseDto tokens = TokenResponseDto.builder()
-                .accessToken(JwtConstants.TOKEN_PREFIX + "access.raw")
-                .refreshToken(JwtConstants.TOKEN_PREFIX + "refresh.raw")
+                .accessToken("access.raw")
+                .refreshToken("refresh.raw")
                 .build();
 
         given(loginService.login(any(LoginRequestDto.class))).willReturn(loginResult);
