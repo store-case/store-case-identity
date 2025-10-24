@@ -1,11 +1,7 @@
 package com.leedahun.storecaseidentity.domain.auth.service.impl;
 
 import com.leedahun.storecaseidentity.common.error.exception.EntityNotFoundException;
-import com.leedahun.storecaseidentity.domain.auth.constant.JwtConstants;
-import com.leedahun.storecaseidentity.domain.auth.dto.JoinRequestDto;
-import com.leedahun.storecaseidentity.domain.auth.dto.LoginRequestDto;
-import com.leedahun.storecaseidentity.domain.auth.dto.LoginUser;
-import com.leedahun.storecaseidentity.domain.auth.dto.TokenResponseDto;
+import com.leedahun.storecaseidentity.domain.auth.dto.*;
 import com.leedahun.storecaseidentity.domain.auth.entity.Role;
 import com.leedahun.storecaseidentity.domain.auth.entity.User;
 import com.leedahun.storecaseidentity.domain.auth.exception.InvalidPasswordException;
@@ -91,7 +87,7 @@ class LoginServiceTest {
     }
 
     @Test
-    @DisplayName("사용자 정보가 일치하면 토큰을 반환한다")
+    @DisplayName("로그인 요청한 사용자 정보가 일치하면 사용자 정보를 반환한다")
     void login_success() {
         // given
         User user = User.builder()
@@ -112,16 +108,17 @@ class LoginServiceTest {
         LoginRequestDto loginRequest = new LoginRequestDto(EMAIL, RAW_PW);
 
         // when
-        TokenResponseDto tokens = loginService.login(loginRequest);
+        LoginResult loginResult = loginService.login(loginRequest);
 
         // then
-        assertThat(tokens.getAccessToken()).isEqualTo(JwtConstants.TOKEN_PREFIX + "access.raw");
-        assertThat(tokens.getRefreshToken()).isEqualTo(JwtConstants.TOKEN_PREFIX + "refresh.raw");
-
+        LoginResponseDto loginResponseDto = loginResult.getLoginResponseDto();
         verify(userRepository).findByEmail(EMAIL);
         verify(passwordEncoder).matches(RAW_PW, ENC_PW);
-        verify(jwtUtil).createAccessToken(1L, Role.USER);
-        verify(jwtUtil).createRefreshToken(1L, Role.USER);
+        assertThat(loginResponseDto.getAccessToken()).isEqualTo("access.raw");
+        assertThat(loginResult.getRefreshToken()).isEqualTo("refresh.raw");
+        assertThat(loginResponseDto.getEmail()).isEqualTo(EMAIL);
+        assertThat(loginResponseDto.getName()).isEqualTo(NAME);
+        assertThat(loginResponseDto.getRole()).isEqualTo(Role.USER);
     }
 
     @Test
@@ -181,11 +178,11 @@ class LoginServiceTest {
         given(jwtUtil.createRefreshToken(10L, Role.USER)).willReturn("new.refresh.raw");
 
         // when
-        TokenResponseDto tokens = loginService.reissueTokens("refresh.raw");
+        TokenResult tokens = loginService.reissueTokens("refresh.raw");
 
         // then
-        assertThat(tokens.getAccessToken()).isEqualTo(JwtConstants.TOKEN_PREFIX + "new.access.raw");
-        assertThat(tokens.getRefreshToken()).isEqualTo(JwtConstants.TOKEN_PREFIX + "new.refresh.raw");
+        assertThat(tokens.getAccessToken()).isEqualTo("new.access.raw");
+        assertThat(tokens.getRefreshToken()).isEqualTo("new.refresh.raw");
 
         verify(jwtUtil).verify("refresh.raw");
         verify(userRepository).findById(10L);
@@ -210,4 +207,5 @@ class LoginServiceTest {
 
         verify(jwtUtil, never()).createAccessToken(anyLong(), any());
     }
+
 }
