@@ -102,6 +102,9 @@ class LoginServiceTest {
         given(userRepository.findByEmail(EMAIL)).willReturn(Optional.of(user));
         given(passwordEncoder.matches(RAW_PW, ENC_PW)).willReturn(true);
 
+        given(jwtUtil.createAccessToken(1L, Role.USER)).willReturn("access.raw");
+        given(jwtUtil.createRefreshToken(1L, Role.USER)).willReturn("refresh.raw");
+
         LoginRequestDto loginRequest = new LoginRequestDto(EMAIL, RAW_PW);
 
         // when
@@ -111,6 +114,8 @@ class LoginServiceTest {
         LoginResponseDto loginResponseDto = loginResult.getLoginResponseDto();
         verify(userRepository).findByEmail(EMAIL);
         verify(passwordEncoder).matches(RAW_PW, ENC_PW);
+        assertThat(loginResponseDto.getAccessToken()).isEqualTo("access.raw");
+        assertThat(loginResult.getRefreshToken()).isEqualTo("refresh.raw");
         assertThat(loginResponseDto.getEmail()).isEqualTo(EMAIL);
         assertThat(loginResponseDto.getName()).isEqualTo(NAME);
         assertThat(loginResponseDto.getRole()).isEqualTo(Role.USER);
