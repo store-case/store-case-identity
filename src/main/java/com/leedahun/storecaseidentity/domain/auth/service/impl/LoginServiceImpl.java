@@ -28,8 +28,7 @@ public class LoginServiceImpl implements LoginService {
         userRepository.findByEmail(joinRequestDto.getEmail())
                 .ifPresent(u -> {throw new UserAlreadyExistsException();});
 
-        joinRequestDto.setEncodedPassword(passwordEncoder.encode(joinRequestDto.getPassword()));
-        User user = joinRequestDto.toEntity();
+        User user = joinRequestDto.toEntity(passwordEncoder.encode(joinRequestDto.getPassword()));
         userRepository.save(user);
     }
 

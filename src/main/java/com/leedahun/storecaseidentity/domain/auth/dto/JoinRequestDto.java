@@ -20,16 +20,13 @@ public class JoinRequestDto {
     private String name;
     private String phone;
 
-    public User toEntity() {
+    public User toEntity(String encodedPassword) {
         return User.builder()
                 .email(this.email)
-                .password(this.password)
+                .password(encodedPassword)
                 .name(this.name)
                 .phone(this.phone)
                 .build();
     }
 
-    public void setEncodedPassword(String encodedPassword) {
-        this.password = encodedPassword;
-    }
 }
