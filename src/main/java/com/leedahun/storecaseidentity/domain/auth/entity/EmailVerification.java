@@ -41,8 +41,8 @@ public class EmailVerification extends BaseTimeEntity {
         this.status = status;
     }
 
-    public void updateLockedUntil() {
-        this.lockedUntil = LocalDateTime.now().plusMinutes(15);
+    public void updateLockedUntil(LocalDateTime lockedUntil) {
+        this.lockedUntil = lockedUntil;
     }
 
     public void increateAttemptCount() {
