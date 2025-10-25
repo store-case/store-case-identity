@@ -19,6 +19,7 @@ import com.leedahun.storecaseidentity.domain.auth.repository.UserRepository;
 import com.leedahun.storecaseidentity.domain.auth.service.JoinService;
 import com.leedahun.storecaseidentity.domain.auth.util.VerificationCodeUtil;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -30,6 +31,7 @@ import java.time.LocalDateTime;
 import java.time.Year;
 import java.util.Optional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class JoinServiceImpl implements JoinService {
@@ -136,6 +138,7 @@ public class JoinServiceImpl implements JoinService {
                 .orElseThrow(() -> new EntityNotFoundException("EmailVerification",  emailVerificationConfirmRequestDto.getEmail()));
 
         if (emailVerification.getStatus().equals(EmailVerifyStatus.VERIFIED)) {
+            log.info("이메일이 이미 인증되었습니다. {}", emailVerificationConfirmRequestDto.getEmail());
             return EmailVerificationConfirmResponseDto.from(emailVerification);
         }
 
