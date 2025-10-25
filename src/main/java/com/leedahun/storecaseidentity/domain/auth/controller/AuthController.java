@@ -19,7 +19,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping("/api/identity/auth")
 @RequiredArgsConstructor
 public class AuthController {
 
@@ -29,7 +29,7 @@ public class AuthController {
 
     @PostMapping("/join")
     public ResponseEntity<?> join(@RequestBody JoinRequestDto joinRequestDto) {
-        loginService.join(joinRequestDto);
+        joinService.join(joinRequestDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(new HttpResponse(HttpStatus.CREATED, SuccessMessage.WRITE_SUCCESS.getMessage(), null));
     }
 
