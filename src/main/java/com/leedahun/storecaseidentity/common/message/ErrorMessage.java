@@ -15,7 +15,12 @@ public enum ErrorMessage {
     EMPTY_TOKEN("토큰이 존재하지 않습니다."),
     INVALID_PASSWORD("비밀번호가 일치하지 않습니다."),
     UNAUTHORIZED("인증이 필요합니다."),
-    FORBIDDEN("권한이 없습니다.");
+    FORBIDDEN("권한이 없습니다."),
+
+    EMAIL_VERIFICATION_FAILED("인증번호가 일치하지 않습니다."),
+    EMAIL_VERIFICATION_EXPIRED("인증코드의 유효기간이 지났습니다."),
+    EMAIL_VERIFICATION_LOCKED("일정 시간 동안 많은 시도로 인해 인증이 제한되었습니다."),
+    EMAIL_VERIFICATION_ATTEMPT_LIMIT_EXCEEDED("지정된 인증 횟수가 초과되었습니다.");
 
     private final String message;
 }

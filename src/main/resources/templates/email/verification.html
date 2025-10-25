@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="ko" style="margin:0;padding:0;" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="x-apple-disable-message-reformatting">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title th:text="${brandName} + ' 이메일 인증'">Brand 이메일 인증</title>
+    <style>
+        @media (max-width:600px){
+            .container { width:100% !important; }
+            .code { font-size:28px !important; letter-spacing:6px !important; }
+            .btn { display:block !important; width:100% !important; }
+        }
+    </style>
+</head>
+<body style="margin:0;padding:0;background:#f6f8fb;">
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#f6f8fb;">
+    <tr>
+        <td align="center" style="padding:24px;">
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="600" class="container"
+                   style="width:600px;max-width:600px;background:#ffffff;border-radius:12px;overflow:hidden;
+                      box-shadow:0 6px 24px rgba(30,41,59,0.08);">
+                <tr>
+                    <td style="background:#0ea5e9;padding:22px 28px;">
+                        <table width="100%" role="presentation" cellpadding="0" cellspacing="0" border="0">
+                            <tr>
+                                <td align="left" style="font:600 18px/1.2 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Noto Sans KR','Apple SD Gothic Neo',sans-serif;color:#ffffff;"
+                                    th:text="${brandName}">FarmDora</td>
+                                <td align="right" style="font:500 14px/1.2 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Noto Sans KR','Apple SD Gothic Neo',sans-serif;color:#e0f2fe;">
+                                    이메일 인증
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td style="padding:32px 32px 12px 32px;">
+                        <h1 style="margin:0 0 12px 0;font:700 22px/1.35 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Noto Sans KR',sans-serif;color:#0f172a;">
+                            인증번호를 입력해 가입을 완료해 주세요
+                        </h1>
+                        <p style="margin:0 0 20px 0;font:400 14px/1.7 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Noto Sans KR',sans-serif;color:#334155;">
+                            아래 <strong>6자리 인증번호</strong>를 인증 화면에 입력하거나, 아래 버튼을 눌러 인증을 완료할 수 있어요.
+                            인증번호의 유효기간은 <strong th:text="${expiresMinutes} + '분'" style="color:red;">5분</strong>입니다.
+                        </p>
+
+                        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"
+                               style="margin:16px 0 8px 0;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:10px;">
+                            <tr>
+                                <td align="center" style="padding:18px 12px;">
+                                    <div class="code"
+                                         style="font:700 32px/1.1 ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,'Liberation Mono','Courier New',monospace;
+                                color:#0f172a;letter-spacing:8px;"
+                                         th:text="${code}">123456</div>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <p style="margin:16px 0 0 0;font:400 12px/1.7 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Noto Sans KR',sans-serif;color:#64748b;">
+                            이 메일을 요청하지 않으셨다면, 인증번호를 누구와도 공유하지 마세요. 필요 시 고객센터로 문의해 주세요.
+                        </p>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td style="padding:18px 28px 26px 28px;border-top:1px solid #eef2f7;">
+                        <p style="margin:0;font:400 12px/1.7 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Noto Sans KR',sans-serif;color:#94a3b8;">
+                            수신자: <span th:text="${email}">user@example.com</span> · 본 메일은 발신 전용입니다.<br/>
+                            © <span th:text="${year}">2025</span> <span th:text="${brandName}">FarmDora</span>. All rights reserved.
+                        </p>
+                    </td>
+                </tr>
+
+            </table>
+        </td>
+    </tr>
+</table>
+</body>
+</html>
