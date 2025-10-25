@@ -5,7 +5,6 @@ import com.leedahun.storecaseidentity.domain.auth.dto.*;
 import com.leedahun.storecaseidentity.domain.auth.entity.Role;
 import com.leedahun.storecaseidentity.domain.auth.entity.User;
 import com.leedahun.storecaseidentity.domain.auth.exception.InvalidPasswordException;
-import com.leedahun.storecaseidentity.domain.auth.exception.UserAlreadyExistsException;
 import com.leedahun.storecaseidentity.domain.auth.repository.UserRepository;
 import com.leedahun.storecaseidentity.domain.auth.util.JwtUtil;
 import org.junit.jupiter.api.DisplayName;
@@ -39,52 +38,7 @@ class LoginServiceTest {
     private static final String NAME = "tester";
     private static final String PHONE = "010-1234-5678";
     private static final String RAW_PW = "plainPW!";
-    private static final String ENC_PW = "$2a$10$encoded"; // 더미
-
-    @Test
-    @DisplayName("신규 이메일이면 사용자를 저장하고 비밀번호를 암호화한다")
-    void join_success() {
-        // given
-        JoinRequestDto joinRequest = JoinRequestDto.builder()
-                .email(EMAIL)
-                .name(NAME)
-                .password(RAW_PW)
-                .phone(PHONE)
-                .build();
-        given(userRepository.findByEmail(EMAIL)).willReturn(Optional.empty());
-        given(passwordEncoder.encode(RAW_PW)).willReturn(ENC_PW);
-        ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
-
-        // when
-        loginService.join(joinRequest);
-
-        // then
-        verify(userRepository, times(1)).save(userCaptor.capture());
-        User saved = userCaptor.getValue();
-        assertThat(saved.getEmail()).isEqualTo(EMAIL);
-        assertThat(saved.getName()).isEqualTo(NAME);
-        assertThat(saved.getPhone()).isEqualTo(PHONE);
-        assertThat(saved.getPassword()).isEqualTo(ENC_PW);
-    }
-
-    @Test
-    @DisplayName("이메일 중복이면 UserAlreadyExistsException을 발생시킨다")
-    void join_duplicateEmail_throws() {
-        // given
-        JoinRequestDto joinRequest = JoinRequestDto.builder()
-                .email(EMAIL)
-                .name(NAME)
-                .password(RAW_PW)
-                .phone(PHONE)
-                .build();
-        given(userRepository.findByEmail(EMAIL)).willReturn(Optional.of(new User()));
-
-        // when / then
-        assertThatThrownBy(() -> loginService.join(joinRequest))
-                .isInstanceOf(UserAlreadyExistsException.class);
-
-        verify(userRepository, never()).save(any(User.class));
-    }
+    private static final String ENC_PW = "$2a$10$encoded";
 
     @Test
     @DisplayName("로그인 요청한 사용자 정보가 일치하면 사용자 정보를 반환한다")

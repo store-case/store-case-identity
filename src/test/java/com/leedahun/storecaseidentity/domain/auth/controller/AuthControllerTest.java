@@ -1,9 +1,12 @@
 package com.leedahun.storecaseidentity.domain.auth.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.leedahun.storecaseidentity.common.message.ErrorMessage;
+import com.leedahun.storecaseidentity.common.message.SuccessMessage;
 import com.leedahun.storecaseidentity.domain.auth.config.JwtProperties;
 import com.leedahun.storecaseidentity.domain.auth.config.SecurityConfig;
 import com.leedahun.storecaseidentity.domain.auth.dto.*;
+import com.leedahun.storecaseidentity.domain.auth.entity.EmailVerifyStatus;
 import com.leedahun.storecaseidentity.domain.auth.entity.Role;
 import com.leedahun.storecaseidentity.domain.auth.exception.RefreshTokenNotExistsException;
 import com.leedahun.storecaseidentity.domain.auth.filter.JwtAuthorizationFilter;
@@ -64,17 +67,17 @@ class AuthControllerTest {
                 .phone("010-1234-1234")
                 .build();
 
-        willDoNothing().given(loginService).join(any(JoinRequestDto.class));
+        willDoNothing().given(joinService).join(any(JoinRequestDto.class));
 
         // when & then
-        mockMvc.perform(post("/api/auth/join")
+        mockMvc.perform(post("/api/identity/auth/join")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(om.writeValueAsString(joinRequest)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.status").value("201"))
                 .andExpect(jsonPath("$.message").exists());
 
-        then(loginService).should(times(1)).join(any(JoinRequestDto.class));
+        then(joinService).should(times(1)).join(any(JoinRequestDto.class));
     }
 
     @Test
@@ -98,7 +101,7 @@ class AuthControllerTest {
         given(jwtProperties.getRefreshExpirationTime()).willReturn(REFRESH_EXPIRATION_TIME);
 
         // when & then
-        MvcResult result = mockMvc.perform(post("/api/auth/login")
+        MvcResult result = mockMvc.perform(post("/api/identity/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(om.writeValueAsString(loginRequest)))
                 .andExpect(status().isOk())
@@ -135,7 +138,7 @@ class AuthControllerTest {
         given(jwtProperties.getRefreshExpirationTime()).willReturn(REFRESH_EXPIRATION_TIME);
 
         // when & then
-        MvcResult result = mockMvc.perform(post("/api/auth/refresh")
+        MvcResult result = mockMvc.perform(post("/api/identity/auth/refresh")
                         .cookie(new MockCookie("refreshToken", cookieValue)))
                 .andExpect(status().isOk())
                 .andExpect(header().exists(HttpHeaders.SET_COOKIE))
@@ -157,7 +160,7 @@ class AuthControllerTest {
     @DisplayName("[POST /api/auth/refresh] refreshToken 쿠키 없을 경우 쿠키 제거(Set-Cookie: Max-Age=0) 후 예외를 발생한다")
     void refresh_withoutCookie_throws_and_clears() throws Exception {
         // when
-        MvcResult result = mockMvc.perform(post("/api/auth/refresh"))
+        MvcResult result = mockMvc.perform(post("/api/identity/auth/refresh"))
                 .andExpect(resultMatcher -> {
                     Throwable ex = resultMatcher.getResolvedException();
                     assertThat(ex).isInstanceOf(RefreshTokenNotExistsException.class);
@@ -170,6 +173,83 @@ class AuthControllerTest {
         assertThat(setCookie).contains("Max-Age=0");
 
         then(loginService).shouldHaveNoInteractions();
+    }
+
+    @Test
+    @DisplayName("[POST /api/identity/auth/join/email] 인증 메일 전송 성공 시 201 CREATED와 본문을 반환한다")
+    void send_email_verification_success() throws Exception {
+        // given
+        EmailVerificationSendRequestDto emailVerificationSendRequest = new EmailVerificationSendRequestDto("user@test.com");
+        willDoNothing().given(joinService).sendJoinEmail(eq("user@test.com"));
+
+        // when & then
+        mockMvc.perform(post("/api/identity/auth/join/email")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(om.writeValueAsString(emailVerificationSendRequest)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.status").value("201"))
+                .andExpect(jsonPath("$.message").value(SuccessMessage.WRITE_SUCCESS.getMessage()))
+                .andExpect(jsonPath("$.data").doesNotExist());
+
+        then(joinService).should(times(1)).sendJoinEmail(eq("user@test.com"));
+    }
+
+    @Test
+    @DisplayName("[POST /api/identity/auth/join/email/verify] 코드 일치(VERIFIED) 시 200 OK와 '인증 성공' 메시지 및 상태를 반환한다")
+    void verify_email_code_verified_success() throws Exception {
+        // given
+        EmailVerificationConfirmRequestDto emailVerificationConfirmRequest =
+                new EmailVerificationConfirmRequestDto("user@test.com", "123456");
+
+        EmailVerificationConfirmResponseDto emailVerificationConfirmResult =
+                EmailVerificationConfirmResponseDto.builder()
+                        .status(EmailVerifyStatus.VERIFIED)
+                        .attempts(1)
+                        .build();
+
+        given(joinService.verifyEmailCode(any(EmailVerificationConfirmRequestDto.class)))
+                .willReturn(emailVerificationConfirmResult);
+
+        // when & then
+        mockMvc.perform(post("/api/identity/auth/join/email/verify")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(om.writeValueAsString(emailVerificationConfirmRequest)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("200"))
+                .andExpect(jsonPath("$.message").value(SuccessMessage.EMAIL_VERIFIED.getMessage()))
+                .andExpect(jsonPath("$.data.status").value("VERIFIED"))
+                .andExpect(jsonPath("$.data.attempts").value(1));
+
+        then(joinService).should(times(1)).verifyEmailCode(any(EmailVerificationConfirmRequestDto.class));
+    }
+
+    @Test
+    @DisplayName("[POST /api/identity/auth/join/email/verify] 미인증 상태(PENDING 등) 시 200 OK와 '인증 실패' 메시지 및 상태를 반환한다")
+    void verify_email_code_not_verified_returns_failed_message() throws Exception {
+        // given
+        EmailVerificationConfirmRequestDto emailVerificationConfirmRequest =
+                new EmailVerificationConfirmRequestDto("user@test.com", "000000");
+
+        EmailVerificationConfirmResponseDto emailVerificationConfirmResult =
+                EmailVerificationConfirmResponseDto.builder()
+                        .status(EmailVerifyStatus.PENDING)
+                        .attempts(2)
+                        .build();
+
+        given(joinService.verifyEmailCode(any(EmailVerificationConfirmRequestDto.class)))
+                .willReturn(emailVerificationConfirmResult);
+
+        // when & then
+        mockMvc.perform(post("/api/identity/auth/join/email/verify")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(om.writeValueAsString(emailVerificationConfirmRequest)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("200"))
+                .andExpect(jsonPath("$.message").value(ErrorMessage.EMAIL_VERIFICATION_FAILED.getMessage()))
+                .andExpect(jsonPath("$.data.status").value("PENDING"))
+                .andExpect(jsonPath("$.data.attempts").value(2));
+
+        then(joinService).should(times(1)).verifyEmailCode(any(EmailVerificationConfirmRequestDto.class));
     }
 
 }
