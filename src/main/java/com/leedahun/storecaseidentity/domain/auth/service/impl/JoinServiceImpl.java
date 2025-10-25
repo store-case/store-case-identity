@@ -165,7 +165,7 @@ public class JoinServiceImpl implements JoinService {
             return EmailVerificationConfirmResponseDto.from(emailVerification);
         }
 
-        emailVerification.increateAttemptCount();
+        emailVerification.increaseAttemptCount();
 
         if (emailVerification.getAttemptCount() >= maxAttempts) {
             emailVerification.updateStatus(EmailVerifyStatus.LOCKED);

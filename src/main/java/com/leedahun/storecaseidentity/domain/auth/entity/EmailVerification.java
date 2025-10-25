@@ -45,7 +45,7 @@ public class EmailVerification extends BaseTimeEntity {
         this.lockedUntil = lockedUntil;
     }
 
-    public void increateAttemptCount() {
+    public void increaseAttemptCount() {
         this.attemptCount++;
     }
 
