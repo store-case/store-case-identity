@@ -1,5 +1,6 @@
 package com.leedahun.storecaseidentity.common.mail;
 
+import com.leedahun.storecaseidentity.domain.auth.exception.EmailSendFailedException;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +29,7 @@ public class EmailClient {
 
         } catch (MessagingException e){
             log.error("Error sending email", e);
+            throw new EmailSendFailedException();
         }
     }
 
