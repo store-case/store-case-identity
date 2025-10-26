@@ -33,6 +33,7 @@ import java.util.Optional;
 
 @Slf4j
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class JoinServiceImpl implements JoinService {
 
@@ -67,50 +68,53 @@ public class JoinServiceImpl implements JoinService {
 
     @Override
     public void sendJoinEmail(String email) {
-        final LocalDateTime now = LocalDateTime.now();
         String code = VerificationCodeUtil.generateEmailVerificationCode();
+        final LocalDateTime now = LocalDateTime.now();
 
         Optional<EmailVerification> optionalEmailVerification = emailVerificationRepository.findTopByEmailAndPurposeOrderByIdDesc(email, EmailPurpose.SIGNUP);
-
         if (optionalEmailVerification.isPresent()) {
-            EmailVerification emailVerification = optionalEmailVerification.get();
-
-            if (emailVerification.getStatus() == EmailVerifyStatus.VERIFIED) {
-                throw new EmailVerificationAlreadyDoneException();
-            }
-
-            if (emailVerification.getStatus() == EmailVerifyStatus.LOCKED) {
-                if (emailVerification.getLockedUntil() != null && now.isBefore(emailVerification.getLockedUntil())) {
-                    throw new EmailVerificationLockedException();
-                }
-
-                emailVerification.updateStatus(EmailVerifyStatus.PENDING);
-                emailVerification.resetAttemptCount();
-                emailVerification.clearLockedUntil();
-            }
-
-            if (emailVerification.getStatus() == EmailVerifyStatus.PENDING && emailVerification.getExpiresAt().isAfter(now)) {
-                emailVerification.updateCode(code);
-                emailVerification.resetExpiresAt(now.plusMinutes(expireMinutes));
-            }
-
-            emailVerificationRepository.save(emailVerification);
-            sendJoinEmailVerificationEmail(email, code);
-
+            handleExistingEmailVerification(optionalEmailVerification.get(), code, now);
             return;
         }
 
-        EmailVerification emailVerification = EmailVerification.builder()
-                .email(email)
-                .purpose(EmailPurpose.SIGNUP)
-                .code(code)
-                .status(EmailVerifyStatus.PENDING)
-                .attemptCount(0)
-                .expiresAt(now.plusMinutes(expireMinutes))
-                .build();
-        emailVerificationRepository.save(emailVerification);
-
+        saveNewEmailVerification(email, code, now);
         sendJoinEmailVerificationEmail(email, code);
+    }
+
+    private void handleExistingEmailVerification(EmailVerification emailVerification, String code, LocalDateTime now) {
+        String email = emailVerification.getEmail();
+        if (emailVerification.getStatus() == EmailVerifyStatus.VERIFIED) {
+            throw new EmailVerificationAlreadyDoneException();
+        } else if (emailVerification.getStatus() == EmailVerifyStatus.LOCKED) {
+            handleLockedEmailVerification(emailVerification, code, now);
+        } else if (emailVerification.getStatus() == EmailVerifyStatus.PENDING && emailVerification.getExpiresAt().isAfter(now)) {
+            handleNotExpiredEmailVerification(emailVerification, code, now);
+        } else if (emailVerification.getExpiresAt().isBefore(now)) {
+            handleExpiredEmailVerification(emailVerification);
+            saveNewEmailVerification(email, code, now);
+        }
+
+        emailVerificationRepository.save(emailVerification);
+        sendJoinEmailVerificationEmail(email, code);
+    }
+
+    private void handleLockedEmailVerification(EmailVerification emailVerification, String code, LocalDateTime now) {
+        if (emailVerification.getLockedUntil() != null && now.isBefore(emailVerification.getLockedUntil())) {
+            throw new EmailVerificationLockedException();
+        }
+        emailVerification.updateStatus(EmailVerifyStatus.PENDING);
+        emailVerification.updateCode(code);
+        emailVerification.resetAttemptCount();
+        emailVerification.clearLockedUntil();
+    }
+
+    private void handleNotExpiredEmailVerification(EmailVerification emailVerification, String code, LocalDateTime now) {
+        emailVerification.updateCode(code);
+        emailVerification.resetExpiresAt(now.plusMinutes(expireMinutes));
+    }
+
+    private void handleExpiredEmailVerification(EmailVerification emailVerification) {
+        emailVerification.updateStatus(EmailVerifyStatus.EXPIRED);
     }
 
     private String buildVerificationHtml(String email, String code) {
@@ -127,6 +131,18 @@ public class JoinServiceImpl implements JoinService {
     private void sendJoinEmailVerificationEmail(String email, String code) {
         String html = buildVerificationHtml(email, code);
         emailClient.sendOneEmail(email, SUBJECT, html);
+    }
+
+    private EmailVerification saveNewEmailVerification(String email, String code, LocalDateTime now) {
+        EmailVerification emailVerification = EmailVerification.builder()
+                .email(email)
+                .purpose(EmailPurpose.SIGNUP)
+                .code(code)
+                .status(EmailVerifyStatus.PENDING)
+                .attemptCount(0)
+                .expiresAt(now.plusMinutes(expireMinutes))
+                .build();
+        return emailVerificationRepository.save(emailVerification);
     }
 
     // TODO 동시성 테스트 필요
