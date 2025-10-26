@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.contains;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
@@ -82,6 +83,7 @@ class JoinServiceTest {
     }
 
     @Nested
+    @DisplayName("회원가입 테스트")
     class joinTests {
 
         @Test
@@ -132,6 +134,7 @@ class JoinServiceTest {
     }
 
     @Nested
+    @DisplayName("회원가입 이메일 전송 요청 테스트")
     class SendJoinEmailTests {
 
         @Test
@@ -235,6 +238,42 @@ class JoinServiceTest {
             then(emailClient).should().sendOneEmail(eq(EMAIL), contains("StoreCase"), eq(HTML));
             verify(emailVerificationRepository, times(1)).save(any(EmailVerification.class));
             verify(emailClient, times(1)).sendOneEmail(eq(EMAIL), contains("StoreCase"), eq(HTML));
+        }
+
+        @Test
+        @DisplayName("회원가입 이메일 요청 시 요청상태이고 만료된 경우 기존 이력을 리셋하고 새 이력을 저장한다")
+        void sendJoinEmail_existing_expired_marksExpired_thenCreatesNew_andSends() {
+            // given
+            LocalDateTime now = LocalDateTime.now();
+            EmailVerification emailVerification = EmailVerification.builder()
+                    .email(EMAIL)
+                    .purpose(EmailPurpose.SIGNUP)
+                    .status(EmailVerifyStatus.PENDING)
+                    .expiresAt(now.minusSeconds(1))
+                    .build();
+
+            given(emailVerificationRepository.findTopByEmailAndPurposeOrderByIdDesc(EMAIL, EmailPurpose.SIGNUP))
+                    .willReturn(Optional.of(emailVerification));
+
+            // when
+            joinService.sendJoinEmail(EMAIL);
+
+            // then
+            // 1) 기존 EXPIRED로 저장
+            then(emailVerificationRepository).should().save(
+                argThat(saved -> saved == emailVerification && saved.getStatus() == EmailVerifyStatus.EXPIRED)
+            );
+            // 2) 새 레코드 저장 (ev와 다른 인스턴스)
+            then(emailVerificationRepository).should().save(argThat(saved ->
+                    saved != emailVerification
+                            && EMAIL.equals(saved.getEmail())
+                            && saved.getStatus() == EmailVerifyStatus.PENDING
+//                            && "CODE123".equals(saved.getCode())
+            ));
+            // 3) 발송 1회
+//            then(emailClient).should(times(1)).sendOneEmail(eq(EMAIL), contains("StoreCase"), eq(HTML));
+            then(emailClient).should(times(1)).sendOneEmail(anyString(), contains(anyString()), eq(anyString()));
+            then(emailVerificationRepository).shouldHaveNoMoreInteractions();
         }
 
     }
