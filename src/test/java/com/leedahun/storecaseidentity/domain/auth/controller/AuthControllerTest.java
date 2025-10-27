@@ -9,7 +9,6 @@ import com.leedahun.storecaseidentity.domain.auth.dto.*;
 import com.leedahun.storecaseidentity.domain.auth.entity.EmailVerifyStatus;
 import com.leedahun.storecaseidentity.domain.auth.entity.Role;
 import com.leedahun.storecaseidentity.domain.auth.exception.RefreshTokenNotExistsException;
-import com.leedahun.storecaseidentity.domain.auth.filter.JwtAuthorizationFilter;
 import com.leedahun.storecaseidentity.domain.auth.service.JoinService;
 import com.leedahun.storecaseidentity.domain.auth.service.LoginService;
 import org.junit.jupiter.api.DisplayName;
@@ -34,7 +33,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(controllers = AuthController.class,
         excludeFilters = @ComponentScan.Filter(
-            type = FilterType.ASSIGNABLE_TYPE, classes = {SecurityConfig.class, JwtAuthorizationFilter.class}
+            type = FilterType.ASSIGNABLE_TYPE, classes = {SecurityConfig.class}
 ))
 @AutoConfigureMockMvc(addFilters = false)
 class AuthControllerTest {
