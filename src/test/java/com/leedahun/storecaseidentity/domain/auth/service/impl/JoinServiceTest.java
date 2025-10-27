@@ -259,20 +259,17 @@ class JoinServiceTest {
             joinService.sendJoinEmail(EMAIL);
 
             // then
-            // 1) 기존 EXPIRED로 저장
             then(emailVerificationRepository).should().save(
                 argThat(saved -> saved == emailVerification && saved.getStatus() == EmailVerifyStatus.EXPIRED)
             );
-            // 2) 새 레코드 저장 (ev와 다른 인스턴스)
+
             then(emailVerificationRepository).should().save(argThat(saved ->
                     saved != emailVerification
                             && EMAIL.equals(saved.getEmail())
                             && saved.getStatus() == EmailVerifyStatus.PENDING
-//                            && "CODE123".equals(saved.getCode())
             ));
-            // 3) 발송 1회
-//            then(emailClient).should(times(1)).sendOneEmail(eq(EMAIL), contains("StoreCase"), eq(HTML));
-            then(emailClient).should(times(1)).sendOneEmail(anyString(), contains(anyString()), eq(anyString()));
+
+            then(emailClient).should(times(1)).sendOneEmail(eq(EMAIL), contains("StoreCase"), eq(null));
             then(emailVerificationRepository).shouldHaveNoMoreInteractions();
         }
 
