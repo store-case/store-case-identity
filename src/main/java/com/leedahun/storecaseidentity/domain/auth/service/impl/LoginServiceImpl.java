@@ -5,7 +5,6 @@ import com.leedahun.storecaseidentity.domain.auth.dto.*;
 import com.leedahun.storecaseidentity.domain.auth.entity.Role;
 import com.leedahun.storecaseidentity.domain.auth.entity.User;
 import com.leedahun.storecaseidentity.domain.auth.exception.InvalidPasswordException;
-import com.leedahun.storecaseidentity.domain.auth.exception.UserAlreadyExistsException;
 import com.leedahun.storecaseidentity.domain.auth.repository.UserRepository;
 import com.leedahun.storecaseidentity.domain.auth.service.LoginService;
 import com.leedahun.storecaseidentity.domain.auth.util.JwtUtil;
@@ -22,15 +21,6 @@ public class LoginServiceImpl implements LoginService {
     private final JwtUtil jwtUtil;
     private final BCryptPasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
-
-    @Override
-    public void join(JoinRequestDto joinRequestDto) {
-        userRepository.findByEmail(joinRequestDto.getEmail())
-                .ifPresent(u -> {throw new UserAlreadyExistsException();});
-
-        User user = joinRequestDto.toEntity(passwordEncoder.encode(joinRequestDto.getPassword()));
-        userRepository.save(user);
-    }
 
     @Override
     @Transactional(readOnly = true)
